@@ -1,0 +1,64 @@
+{
+	"name": "UPD_WATERMARK",
+	"properties": {
+		"activities": [
+			{
+				"name": "Stored procedure1",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[UpdateWatermark]",
+					"storedProcedureParameters": {
+						"TableName": {
+							"value": {
+								"value": "@pipeline().parameters.tablename",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TableSchema": {
+							"value": {
+								"value": "@pipeline().parameters.schemaname",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"WatermarkColumn": {
+							"value": {
+								"value": "@pipeline().parameters.watermarkcolumn",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "SqlServer2",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"tablename": {
+				"type": "string"
+			},
+			"schemaname": {
+				"type": "string"
+			},
+			"watermarkcolumn": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-07-12T02:31:21Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

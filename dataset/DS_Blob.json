@@ -1,0 +1,19 @@
+{
+	"name": "DS_Blob",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_blob_input",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "vamika baby.txt",
+				"container": "input"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

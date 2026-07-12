@@ -1,0 +1,21 @@
+{
+	"name": "LS_SQLserver",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"server": "DESKTOP-7NH6FU4\\SQLEXPRESS",
+			"database": "master",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "Windows",
+			"userName": "DESKTOP-7NH6FU4\\Tharak",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI1N2VhYTI4MS1hOTIzLTQ5ZmItYTg2YS0xMTk0OTM5OTUzZWIiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "integrationRuntime1",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
