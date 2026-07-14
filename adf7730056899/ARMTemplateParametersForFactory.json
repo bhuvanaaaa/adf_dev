@@ -1,0 +1,66 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf7730056899"
+		},
+		"AzureBlobStorage1_connectionString": {
+			"value": ""
+		},
+		"LS_ADLS_accountKey": {
+			"value": ""
+		},
+		"LS_SQLserver_password": {
+			"value": ""
+		},
+		"LS_blob_input_connectionString": {
+			"value": ""
+		},
+		"LS_blob_metadata_connectionString": {
+			"value": ""
+		},
+		"LS_blob_wildcard_connectionString": {
+			"value": ""
+		},
+		"SqlServer1_password": {
+			"value": ""
+		},
+		"SqlServer2_password": {
+			"value": ""
+		},
+		"LS_ADLS_properties_typeProperties_url": {
+			"value": "https://adlsch.dfs.core.windows.net/"
+		},
+		"LS_REST_properties_typeProperties_url": {
+			"value": "https://retoolapi.dev/5yDVOt/data"
+		},
+		"LS_SQLserver_properties_typeProperties_server": {
+			"value": "DESKTOP-7NH6FU4\\SQLEXPRESS"
+		},
+		"LS_SQLserver_properties_typeProperties_database": {
+			"value": "master"
+		},
+		"LS_SQLserver_properties_typeProperties_userName": {
+			"value": "DESKTOP-7NH6FU4\\Tharak"
+		},
+		"SqlServer1_properties_typeProperties_server": {
+			"value": "DESKTOP-7NH6FU4\\SQLEXPRESS"
+		},
+		"SqlServer1_properties_typeProperties_database": {
+			"value": "master"
+		},
+		"SqlServer1_properties_typeProperties_userName": {
+			"value": "DESKTOP-7NH6FU4\\Tharak"
+		},
+		"SqlServer2_properties_typeProperties_server": {
+			"value": "DESKTOP-7NH6FU4\\SQLEXPRESS"
+		},
+		"SqlServer2_properties_typeProperties_database": {
+			"value": "Retail_DW"
+		},
+		"SqlServer2_properties_typeProperties_userName": {
+			"value": "Chandrika"
+		}
+	}
+}
