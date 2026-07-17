@@ -61,6 +61,22 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/RestResource1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_REST",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/LS_SQLserver')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -173,6 +189,15 @@
 							"formatSettings": {
 								"type": "BinaryReadSettings"
 							}
+						}
+					},
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
 						}
 					}
 				],
@@ -569,7 +594,9 @@
 				"annotations": [],
 				"lastPublishTime": "2026-07-02T07:10:42Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/RestResource1')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/PL_SQLSERVER_procedure')]",
@@ -999,6 +1026,24 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DS_Copy_order')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SqlServer2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SqlServer2')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/DS_migration_watermark')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1038,6 +1083,70 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DS_order_tableinside')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SqlServer2",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"tablename": {
+						"type": "string"
+					},
+					"tableschema": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SqlServer2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_order_watermark')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SqlServer2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [
+					{
+						"name": "tablename",
+						"type": "nvarchar"
+					},
+					{
+						"name": "tableschema",
+						"type": "nvarchar"
+					},
+					{
+						"name": "watermarkcolumn",
+						"type": "nvarchar"
+					},
+					{
+						"name": "lastloadvalue",
+						"type": "date"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "order_watermark"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SqlServer2')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/SqlServerTable2')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1064,13 +1173,13 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/PL_Childpipeline1')]",
+			"name": "[concat(parameters('factoryName'), '/DS_order_child')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "LKUP_Eachtable",
+						"name": "Lookup1_order",
 						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
@@ -1085,27 +1194,26 @@
 							"source": {
 								"type": "SqlServerSource",
 								"sqlReaderQuery": {
-									"value": "SELECT MAX(@{pipeline().parameters.WatermarkColumn}) AS MaxValue\nFROM @{pipeline().parameters.TableSchema}.@{pipeline().parameters.TableName}",
+									"value": "select max(@{pipeline().parameters.Watermarkcolumn}) as max_value from @{pipeline().parameters.Tableschema}.@{pipeline().parameters.Tablename}",
 									"type": "Expression"
 								},
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
 							"dataset": {
-								"referenceName": "SqlServerTable2",
+								"referenceName": "DS_order_tableinside",
 								"type": "DatasetReference",
 								"parameters": {
-									"schemaname": {
-										"value": "@pipeline().parameters.TableSchema",
+									"tablename": {
+										"value": "@pipeline().parameters.Tablename",
 										"type": "Expression"
 									},
-									"tablename": {
-										"value": "@pipeline().parameters.TableName",
+									"tableschema": {
+										"value": "@pipeline().parameters.Tableschema",
 										"type": "Expression"
 									}
 								}
-							},
-							"firstRowOnly": true
+							}
 						}
 					},
 					{
@@ -1113,7 +1221,7 @@
 						"type": "IfCondition",
 						"dependsOn": [
 							{
-								"activity": "LKUP_Eachtable",
+								"activity": "Lookup1_order",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -1122,7 +1230,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"expression": {
-								"value": "@or(equals(pipeline().parameters.LastLoadValue, null), greater(int(activity('LKUP_Eachtable').output.firstRow.MaxValue), int(pipeline().parameters.LastLoadValue)))",
+								"value": "@or(equals(activity('Lookup1_order').output.firstRow.max_value,null ), greater(int(activity('Lookup1_order').output.firstRow.max_value),int(pipeline().parameters.Lastloadvalue)))",
 								"type": "Expression"
 							},
 							"ifTrueActivities": [
@@ -1142,7 +1250,7 @@
 										"source": {
 											"type": "SqlServerSource",
 											"sqlReaderQuery": {
-												"value": "@concat(\n    'SELECT * FROM ',\n    pipeline().parameters.TableSchema, '.', pipeline().parameters.TableName,\n    if(\n        equals(pipeline().parameters.LastLoadValue, null),\n        '', \n        concat(\n            ' WHERE ', pipeline().parameters.WatermarkColumn,\n            ' > ''', pipeline().parameters.LastLoadValue, ''''\n        )\n    )\n)\n",
+												"value": "@concat(\n'SELECT * FROM ',\npipeline().parameters.Tablename,\n' WHERE ',\nactivity('Lookup1_order').output.firstRow.max_value,\n' > ',\npipeline().parameters.Lastloadvalue\n)",
 												"type": "Expression"
 											},
 											"queryTimeout": "02:00:00",
@@ -1169,27 +1277,18 @@
 									},
 									"inputs": [
 										{
-											"referenceName": "SqlServerTable2",
+											"referenceName": "DS_Copy_order",
 											"type": "DatasetReference",
-											"parameters": {
-												"schemaname": {
-													"value": "@pipeline().parameters.TableSchema",
-													"type": "Expression"
-												},
-												"tablename": {
-													"value": "@pipeline().parameters.TableName",
-													"type": "Expression"
-												}
-											}
+											"parameters": {}
 										}
 									],
 									"outputs": [
 										{
-											"referenceName": "Parquet1",
+											"referenceName": "Parquet2",
 											"type": "DatasetReference",
 											"parameters": {
 												"tablename": {
-													"value": "@pipeline().parameters.TableName",
+													"value": "@pipeline().parameters.Tablename",
 													"type": "Expression"
 												}
 											}
@@ -1197,8 +1296,8 @@
 									]
 								},
 								{
-									"name": "Execute Pipeline1",
-									"type": "ExecutePipeline",
+									"name": "Stored procedure1",
+									"type": "SqlServerStoredProcedure",
 									"dependsOn": [
 										{
 											"activity": "Copy data1",
@@ -1208,29 +1307,35 @@
 										}
 									],
 									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
 										"secureInput": false
 									},
 									"userProperties": [],
 									"typeProperties": {
-										"pipeline": {
-											"referenceName": "UPD_WATERMARK",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true,
-										"parameters": {
-											"tablename": {
-												"value": "@pipeline().parameters.TableName",
-												"type": "Expression"
+										"storedProcedureName": "[[dbo].[ord_watermark_procedure]",
+										"storedProcedureParameters": {
+											"lasprovalue": {
+												"value": {
+													"value": "@activity('Lookup1_order').output.firstRow.max_value",
+													"type": "Expression"
+												},
+												"type": "String"
 											},
-											"schemaname": {
-												"value": "@pipeline().parameters.TableSchema",
-												"type": "Expression"
-											},
-											"watermarkcolumn": {
-												"value": "@pipeline().parameters.WatermarkColumn",
-												"type": "Expression"
+											"tabname": {
+												"value": {
+													"value": "@pipeline().parameters.Tablename",
+													"type": "Expression"
+												},
+												"type": "String"
 											}
 										}
+									},
+									"linkedServiceName": {
+										"referenceName": "SqlServer2",
+										"type": "LinkedServiceReference"
 									}
 								}
 							]
@@ -1241,159 +1346,25 @@
 					"elapsedTimeMetric": {}
 				},
 				"parameters": {
-					"TableName": {
+					"Tablename": {
 						"type": "string"
 					},
-					"TableSchema": {
+					"Tableschema": {
 						"type": "string"
 					},
-					"WatermarkColumn": {
+					"Watermarkcolumn": {
 						"type": "string"
 					},
-					"LastLoadValue": {
+					"Lastloadvalue": {
 						"type": "string"
 					}
 				},
-				"annotations": [],
-				"lastPublishTime": "2026-07-12T03:00:03Z"
+				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SqlServerTable2')]",
-				"[concat(variables('factoryId'), '/pipelines/UPD_WATERMARK')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/PL_PARENT_PIPELINE')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "LKUP_WATERMARK",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "DS_migration_watermark",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": false
-						}
-					},
-					{
-						"name": "ForEach1",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "LKUP_WATERMARK",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('LKUP_WATERMARK').output.value",
-								"type": "Expression"
-							},
-							"isSequential": false,
-							"activities": [
-								{
-									"name": "ExecuteSP",
-									"type": "ExecutePipeline",
-									"dependsOn": [],
-									"policy": {
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"pipeline": {
-											"referenceName": "PL_Childpipeline1",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true,
-										"parameters": {
-											"TableName": {
-												"value": "@item().TableName",
-												"type": "Expression"
-											},
-											"TableSchema": {
-												"value": "@item().TableSchema",
-												"type": "Expression"
-											},
-											"WatermarkColumn": {
-												"value": "@item().WatermarkColumn",
-												"type": "Expression"
-											},
-											"LastLoadValue": {
-												"value": "@item().LastLoadValue",
-												"type": "Expression"
-											}
-										}
-									}
-								},
-								{
-									"name": "ExecuteSP_copy1",
-									"type": "ExecutePipeline",
-									"dependsOn": [],
-									"policy": {
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"pipeline": {
-											"referenceName": "PL_Childpipeline1",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true,
-										"parameters": {
-											"TableName": {
-												"value": "@item().TableName",
-												"type": "Expression"
-											},
-											"TableSchema": {
-												"value": "@item().TableSchema",
-												"type": "Expression"
-											},
-											"WatermarkColumn": {
-												"value": "@item().WatermarkColumn",
-												"type": "Expression"
-											},
-											"LastLoadValue": {
-												"value": "@item().LastLoadValue",
-												"type": "Expression"
-											}
-										}
-									}
-								}
-							]
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2026-07-12T03:13:17Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/DS_migration_watermark')]",
-				"[concat(variables('factoryId'), '/pipelines/PL_Childpipeline1')]"
+				"[concat(variables('factoryId'), '/datasets/DS_order_tableinside')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Copy_order')]",
+				"[concat(variables('factoryId'), '/linkedServices/SqlServer2')]"
 			]
 		}
 	]
