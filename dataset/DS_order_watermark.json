@@ -1,0 +1,33 @@
+{
+	"name": "DS_order_watermark",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SqlServer2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [
+			{
+				"name": "tablename",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tableschema",
+				"type": "nvarchar"
+			},
+			{
+				"name": "watermarkcolumn",
+				"type": "nvarchar"
+			},
+			{
+				"name": "lastloadvalue",
+				"type": "date"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "order_watermark"
+		}
+	}
+}
