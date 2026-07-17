@@ -54,7 +54,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@or(equals(activity('Lookup1_order').output.firstRow.max_value,null ), greater(activity('Lookup1_order').output.firstRow.max_value , pipeline().parameters.Lastloadvalue))",
+						"value": "@or(equals(activity('Lookup1_order').output.firstRow.max_value,null ), greater(int(activity('Lookup1_order').output.firstRow.max_value),int(pipeline().parameters.Lastloadvalue)))",
 						"type": "Expression"
 					},
 					"ifTrueActivities": [
@@ -74,7 +74,7 @@
 								"source": {
 									"type": "SqlServerSource",
 									"sqlReaderQuery": {
-										"value": "select * from @{pipeline().parameters.Tablename} where activity('Lookup1_order').output.firstRow.Watermarkcolumn > @{pipeline().parameters.Lastloadvalue}",
+										"value": "@concat(\n'SELECT * FROM ',\npipeline().parameters.Tablename,\n' WHERE ',\nactivity('Lookup1_order').output.firstRow.max_value,\n' > ',\npipeline().parameters.Lastloadvalue\n)",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",

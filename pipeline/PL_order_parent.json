@@ -46,7 +46,25 @@
 						"referenceName": "DS_order_child",
 						"type": "PipelineReference"
 					},
-					"waitOnCompletion": true
+					"waitOnCompletion": true,
+					"parameters": {
+						"Tablename": {
+							"value": "@activity('Lookup1').output.firstRow.tablename",
+							"type": "Expression"
+						},
+						"Tableschema": {
+							"value": "@activity('Lookup1').output.firstRow.tableschema",
+							"type": "Expression"
+						},
+						"Watermarkcolumn": {
+							"value": "@activity('Lookup1').output.firstRow.watermarkcolumn",
+							"type": "Expression"
+						},
+						"Lastloadvalue": {
+							"value": "@activity('Lookup1').output.firstRow.lastloadvalue",
+							"type": "Expression"
+						}
+					}
 				}
 			}
 		],
